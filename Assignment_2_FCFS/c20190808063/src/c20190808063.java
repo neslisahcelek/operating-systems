@@ -4,7 +4,7 @@ import java.util.*;
 
 public class c20190808063 {
     public static void main(String[] args) throws Exception{
-        File file = new File("samplejobs.txt");
+        File file = new File("samplejobs2.txt");
         Queue<Process> waitingList= new LinkedList<>(); //process list
         List<String> lines = format(file);
 
@@ -56,7 +56,8 @@ public class c20190808063 {
                                 }
                             }
                             System.out.println("idle is running for " + (returnMin - currentTime));
-                            idle.countIdle++;
+                            if ((returnMin - currentTime) != 0)
+                                idle.countIdle++;
                             currentTime = returnMin;
                             waitingList.poll();
                             waitingList.add(currentProcess);
