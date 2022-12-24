@@ -5,17 +5,20 @@ import java.util.*;
 public class c20190808063 {
     public static void main(String[] args) throws Exception{
         File file = new File("samplejobs.txt");
-        Queue<Process> waitingList= new LinkedList<Process>(); //process list
+        Queue<Process> waitingList= new LinkedList<>(); //process list
         List<String> lines = format(file);
 
-        addProcess(waitingList, lines);
-        Process idle = new Process("process0",0);
-        FCFS(waitingList,lines);
 
+        addProcess(waitingList, lines);
+        List<Process> processList = new ArrayList<>(waitingList);
+        idleProcess idle = new idleProcess(0);
+        FCFS(waitingList,lines, idle);
+
+        calculateAverages(processList);
+        System.out.println("IDLE process executed: " + idle.countIdle + " times.");
         System.out.println("HALT");
     }
-    public static void FCFS(Queue<Process> waitingList, List<String> lines){
-        int countIdle=0; //# of times idle process was executed
+    public static void FCFS(Queue<Process> waitingList, List<String> lines, idleProcess idle){
         int currentTime = 0;
         int round = 0;
 
@@ -41,8 +44,6 @@ public class c20190808063 {
                 else {
                     if (currentProcess.returnTime > currentTime) { //if process is not ready (waiting for io)
                         System.out.println(currentProcess.name + " waiting for io");
-                        //Queue<Process> waitingNow = new LinkedList<>();
-                        //waitingNow.add(currentProcess);
                         System.out.println("i: " +i);
                         if (i==lines.size()-1){
                             assert waitingList.peek() != null;
@@ -55,7 +56,7 @@ public class c20190808063 {
                                 }
                             }
                             System.out.println("idle is running for " + (returnMin - currentTime));
-                            countIdle++;
+                            idle.countIdle++;
                             currentTime = returnMin;
                             waitingList.poll();
                             waitingList.add(currentProcess);
@@ -63,10 +64,11 @@ public class c20190808063 {
                         }
                     }
                     else if (currentProcess.IOBursts.get(0)==-1){ //terminate
+                        System.out.println( currentProcess.name + " terminate");
                         currentTime += currentProcess.cpuBursts.get(0);
+                        currentProcess.turnaroundTime = currentTime;
                         currentProcess.setReturnTime(0);
                         waitingList.poll();
-                        System.out.println( currentProcess.name + " terminate");
                     }
                     else {
                         System.out.println(currentProcess.name + " running");
@@ -81,8 +83,21 @@ public class c20190808063 {
             }
             round++;
         }
-        //System.out.print(currentProcess.name + " ");
-        //System.out.println(waitingList.peek().name);
+    }
+    public static void calculateAverages(List<Process> processList){
+        double waitingSum=0;
+        double turnAroundSum=0;
+        for (Process p: processList){
+            waitingSum += p.countWaitingTime();
+            turnAroundSum += p.turnaroundTime;
+            System.out.println(p.name + " waitin: " + p.countWaitingTime() + " turn: " + p.turnaroundTime);
+        }
+        System.out.println(waitingSum);
+        double avgWaiting = waitingSum / processList.size();
+        double avgTurnaround = turnAroundSum / processList.size();
+
+        System.out.println("Average turnaround time: " + avgTurnaround +
+                            "\nAverage waiting time: " + avgWaiting);
     }
     public static void addProcess(Queue<Process> waitingList, List<String> lines){
         for (int i=1; i<=lines.size(); i++){ //between 1 and line number
@@ -95,8 +110,8 @@ public class c20190808063 {
             boolean first = true;
 
             for (int j=1; j<parts.length; j++){
-                if (first==true){  //we are reading first number of line that is pid
-                    pid=Integer.valueOf(parts[0]);
+                if (first){  //we are reading first number of line that is pid
+                    pid=Integer.parseInt(parts[0]);
                     first=false;
                 }
                 cpuBursts.add(Integer.valueOf(parts[j]));
@@ -114,8 +129,8 @@ public class c20190808063 {
         while(input.hasNextLine()){
             String line= input.nextLine();
             line = line.replaceAll("[^\\d-]", " ");
-            line=line.replaceAll("   "," ");
-            line=line.replaceAll("  "," ");
+            line=line.replaceAll(" {3}"," ");
+            line=line.replaceAll(" {2}"," ");
             lines.add(line);
         }
         return lines;
@@ -127,20 +142,34 @@ class Process{
     List<Integer> cpuBursts;
     List<Integer> IOBursts;
     int returnTime;
-    int nextBurst=0;
+    int waitingTime;
+    int turnaroundTime;
+    int burstSum=0;
 
     Process(String name, int PID, List<Integer> cpuBursts, List<Integer> IOBursts){
         this.name=name;
         this.cpuBursts=cpuBursts;
         this.IOBursts=IOBursts;
         this.ID=PID;
+        for (int burst : cpuBursts){
+            burstSum+=burst;
+        }
     }
-    Process(String name, int PID){
-        name=name;
+    Process(int PID){ //idle process
         ID=PID;
     }
-
+    public int countWaitingTime(){
+        waitingTime=turnaroundTime-burstSum;
+        return waitingTime;
+    }
     public void setReturnTime(int returnTime) {
         this.returnTime = returnTime;
+    }
+}
+class idleProcess extends Process{
+    int countIdle;
+    idleProcess(int PID) {
+        super(PID);
+        countIdle=0;
     }
 }
