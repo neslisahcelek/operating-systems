@@ -7,7 +7,7 @@ import java.util.*;
 
 public class c20190808063 {
     public static void main(String[] args) throws Exception{
-        File file = new File("samplejobs2.txt");
+        File file = new File("samplejobs.txt");
         List<String> lines = format(file);
 
         Queue<Process> waitingList= new LinkedList<>(); //process queue
@@ -64,10 +64,11 @@ public class c20190808063 {
                                     System.out.println(p.name + " " + p.returnTime);
                                 }
                             }
-                            System.out.println("idle is running for " + (returnMin - currentTime));
-                            if ((returnMin - currentTime) != 0) //if current time equals returnMin, idle will not execute
+                            if (returnMin > currentTime){ //if current time is less than returnMin, idle will execute
+                                System.out.println("idle is running for " + (returnMin - currentTime));
                                 idle.countIdle++;    //idle is executing until current time equals returnMin
-                            currentTime = returnMin;
+                                currentTime = returnMin;
+                            }
                             waitingList.poll(); //remove the process from the queue
                             waitingList.add(currentProcess); //now, the process is waiting for next round
                             round--;    //round is not increasing

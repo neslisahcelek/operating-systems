@@ -1,5 +1,10 @@
+/*
+@aouthor: neslisah celek
+@id: 20190808063
+ */
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class FCFS {
     // Represents a process with a name, an arrival time, and a list of bursts
