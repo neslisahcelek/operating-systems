@@ -7,7 +7,7 @@ import java.util.*;
 
 public class c20190808063 {
     public static void main(String[] args) throws Exception{
-        File file = new File("samplejobs.txt");
+        File file = new File("Yeni.txt");
         List<String> lines = format(file);
 
         Queue<Process> waitingList= new LinkedList<>(); //process queue
@@ -163,8 +163,10 @@ class Process{
         this.cpuBursts=cpuBursts;
         this.IOBursts=IOBursts;
         this.ID=PID;
-        for (int burst : cpuBursts){
-            burstSum+=burst;
+        for (int i=0; i<cpuBursts.size(); i++){
+            burstSum+=cpuBursts.get(i);
+            if (IOBursts.get(i) == -1) //if process terminated (in case of additional tuples after termination)
+                break;
         }
     }
     Process(int PID){ //idle process
