@@ -7,7 +7,7 @@ import java.util.*;
 
 public class c20190808063 {
     public static void main(String[] args) throws Exception{
-        File file = new File("Yeni.txt");
+        File file = new File(args[0]); //take file name as command line argument
         List<String> lines = format(file);
 
         Queue<Process> waitingList= new LinkedList<>(); //process queue
@@ -101,7 +101,7 @@ public class c20190808063 {
         for (Process p: processList){
             waitingSum += p.countWaitingTime();
             turnAroundSum += p.turnaroundTime;
-            System.out.println(p.name + " waitin: " + p.countWaitingTime() + " turn: " + p.turnaroundTime);
+            System.out.println(p.name + " waiting: " + p.countWaitingTime() + " turnaround: " + p.turnaroundTime);
         }
         System.out.println(waitingSum);
         //averages of waiting times and turnaround times
@@ -112,9 +112,11 @@ public class c20190808063 {
                             "\nAverage waiting time: " + avgWaiting);
     }
     public static void addProcess(Queue<Process> waitingList, List<String> lines){ //create Process instances from file lines
+        ArrayList<Process> sortedList = new ArrayList<>(); //sorted by process ids
         for (int i=1; i<=lines.size(); i++){ //between 1 and line number(number of processes)
             ArrayList<Integer> cpuBursts= new ArrayList<>();
             ArrayList<Integer> IOBursts= new ArrayList<>();
+
             String processName = "process" +i;
             String[] parts = lines.get(i-1).split(" ");
 
@@ -131,8 +133,10 @@ public class c20190808063 {
                 IOBursts.add(Integer.valueOf(parts[j])); //next part is io burst
             }
             Process p = new Process(processName,pid,cpuBursts,IOBursts);
-            waitingList.add(p);
+            sortedList.add(p);
         }
+        sortedList.sort(new SortbyID());
+        waitingList.addAll(sortedList);
     }
     public static List<String> format(File file) throws Exception{ //take inputs from file, convert it to string with spaces
         Scanner input = new Scanner(file);
@@ -186,5 +190,11 @@ class idleProcess extends Process{
     idleProcess(int PID) {
         super(PID);
         countIdle=0;
+    }
+}
+class SortbyID implements Comparator<Process> {
+    @Override
+    public int compare(Process p1, Process p2) {
+        return p1.ID-p2.ID;
     }
 }
