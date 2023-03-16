@@ -36,11 +36,6 @@ public class c20190808063 {
                 if (currentProcess==null){ //avoid exception
                     break;
                 }
-                System.out.print("current time: " + currentTime);
-                System.out.println(" round: " + round);
-
-                System.out.println("current: " + currentProcess.name + "return: " + currentProcess.returnTime);
-
                 if (round==0){ //first round, every process run simply, no need to control
                     currentTime += currentProcess.cpuBursts.get(0);
                     currentProcess.setReturnTime(currentTime+(currentProcess.IOBursts.get(0)));
@@ -51,21 +46,16 @@ public class c20190808063 {
                 }
                 else {
                     if (currentProcess.returnTime > currentTime) { //if process is not ready (waiting for io)
-                        System.out.println(currentProcess.name + " waiting for io");
-                        System.out.println("i: " +i);
                         if (i==lines.size()-1){
                             assert waitingList.peek() != null;  //avoid exception
                             //calculate early return time of all processes
                             int returnMin = waitingList.peek().returnTime;
-                            System.out.println(waitingList.peek().name + " " +returnMin);
                             for (Process p:waitingList){
                                 if (returnMin>p.returnTime){
                                     returnMin=p.returnTime;
-                                    System.out.println(p.name + " " + p.returnTime);
                                 }
                             }
                             if (returnMin > currentTime){ //if current time is less than returnMin, idle will execute
-                                System.out.println("idle is running for " + (returnMin - currentTime));
                                 idle.countIdle++;    //idle is executing until current time equals returnMin
                                 currentTime = returnMin;
                             }
@@ -75,14 +65,12 @@ public class c20190808063 {
                         }
                     }
                     else if (currentProcess.IOBursts.get(0)==-1){ //if process is about to terminate
-                        System.out.println( currentProcess.name + " terminate");
                         currentTime += currentProcess.cpuBursts.get(0); //it is running for last time
                         currentProcess.turnaroundTime = currentTime; //turnaroundTime is equal to finish running
                         currentProcess.setReturnTime(0);  //it will not return
                         waitingList.poll(); //remove the process from the queue
                     }
                     else { //execute normally
-                        System.out.println(currentProcess.name + " running");
                         currentTime += currentProcess.cpuBursts.get(0); //it is running
                         currentProcess.setReturnTime(currentTime+currentProcess.IOBursts.get(0)); //it will return after io operations
                         currentProcess.cpuBursts.remove(0); //tuple is completed
@@ -101,9 +89,7 @@ public class c20190808063 {
         for (Process p: processList){
             waitingSum += p.countWaitingTime();
             turnAroundSum += p.turnaroundTime;
-            System.out.println(p.name + " waiting: " + p.countWaitingTime() + " turnaround: " + p.turnaroundTime);
         }
-        System.out.println(waitingSum);
         //averages of waiting times and turnaround times
         double avgWaiting = waitingSum / processList.size();
         double avgTurnaround = turnAroundSum / processList.size();
